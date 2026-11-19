@@ -31,7 +31,3 @@ The Signal Cartel
 1. Install [Lazarus IDE](https://www.lazarus-ide.org/).
 2. Ensure you have the [BGRABitmap](https://github.com/bgrabitmap/bgrabitmap) package installed in Lazarus via the Online Package Manager (OPM).
 
-### Compiling from Source
-1. Clone the repository:
-   ```bash
-   git clone [https://github.com/Arsiteks/echo-breach.git](https://github.com/Arsiteks/echo-breach.git)
