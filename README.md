@@ -1,4 +1,4 @@
-# ECHO_BREACH: The Signal Cartel 📟
+# ECHO-BREACH: The Signal Cartel 📟
 
 > *"The cartel hides their secrets in plain sight... inside the sound waves."*
 
