@@ -3,6 +3,8 @@ The Signal Cartel
 
 > *"The cartel hides their secrets in plain sight... inside the sound waves."*
 
+<img width="819" height="428" alt="image" src="https://github.com/user-attachments/assets/dfdccc37-ee96-4923-9f37-184c3f8cbf88" />
+
 **ECHO-BREACH** is a terminal-based, acoustic cyber-warfare simulator built with Object Pascal (Lazarus). Step into the shoes of a freelance operator utilizing the experimental `ECHO-OS`. Your mission: intercept audio frequencies, decrypt hidden carrier waves, and navigate a procedurally generated network to dismantle a dangerous underground syndicate known as *The Signal Cartel*.
 
 ## ✨ Core Features
