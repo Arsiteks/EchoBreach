@@ -47,7 +47,7 @@ implementation
 
 procedure TFormAbout.FormCreate(Sender: TObject);
 begin
-  Self.Caption := 'Tentang Aplikasi';
+  Self.Caption := 'About Mes';
 
 
 end;

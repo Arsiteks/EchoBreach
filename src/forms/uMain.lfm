@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Height = 720
   Top = 150
   Width = 1280
-  Caption = 'ECHO_BREACH: The Signal Cartel'
+  Caption = 'EchoBreach : The Signal Cartel'
   ClientHeight = 720
   ClientWidth = 1280
   Color = clBlack

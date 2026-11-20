@@ -3,7 +3,7 @@ object MainForm: TMainForm
   Height = 720
   Top = 150
   Width = 1280
-  Caption = 'ECHO_BREACH: The Signal Cartel'
+  Caption = 'EchoBreach : The Signal Cartel'
   ClientHeight = 720
   ClientWidth = 1280
   Color = clBlack
@@ -278,12 +278,6 @@ object MainForm: TMainForm
     Top = 401
     object MenuItem1: TMenuItem
       Caption = 'System'
-      object MenuItem4: TMenuItem
-        Caption = 'Cek Update'
-      end
-      object Separator2: TMenuItem
-        Caption = '-'
-      end
       object mnTerminate: TMenuItem
         Caption = 'Exit'
       end

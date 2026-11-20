@@ -23,7 +23,6 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
-    MenuItem4: TMenuItem;
     mnAbout: TMenuItem;
     mnTerminate: TMenuItem;
     mnTutorial: TMenuItem;
@@ -37,7 +36,6 @@ type
     pnlTerminalInput: TPanel;
     pnlOverlay: TPanel;
     Separator1: TMenuItem;
-    Separator2: TMenuItem;
     tmrUIUpdate: TTimer;
 
     procedure edtCommandKeyPress(Sender: TObject; var Key: char);
