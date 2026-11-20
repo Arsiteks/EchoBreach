@@ -1,0 +1,96 @@
+object AboutForm: TAboutForm
+  Left = 500
+  Height = 400
+  Top = 250
+  Width = 500
+  BorderStyle = bsNone
+  Caption = 'About ECHO_BREACH'
+  ClientHeight = 400
+  ClientWidth = 500
+  Color = clBlack
+  OnCreate = FormCreate
+  Position = poMainFormCenter
+  LCLVersion = '3.0.0.0'
+  object pnlMain: TPanel
+    Left = 0
+    Height = 400
+    Top = 0
+    Width = 500
+    Align = alClient
+    BevelColor = clLime
+    BevelOuter = bvSingle
+    BevelWidth = 2
+    ClientHeight = 400
+    ClientWidth = 500
+    Color = clBlack
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 0
+    object lblTitle: TLabel
+      Left = 2
+      Height = 24
+      Top = 20
+      Width = 496
+      Align = alTop
+      Alignment = taCenter
+      BorderSpacing.Top = 18
+      Caption = 'ECHO_BREACH SYSTEM INFO'
+      Font.Color = clLime
+      Font.Height = -21
+      Font.Name = 'Courier New'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object lblVersion: TLabel
+      Left = 2
+      Height = 16
+      Top = 44
+      Width = 496
+      Align = alTop
+      Alignment = taCenter
+      Caption = 'OS VERSION: 1.99.BUILD.45'
+      Font.Color = $0000AA00
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      ParentColor = False
+      ParentFont = False
+    end
+    object memCredits: TMemo
+      Left = 10
+      Height = 286
+      Top = 68
+      Width = 480
+      Align = alClient
+      BorderSpacing.Around = 8
+      BorderStyle = bsNone
+      Color = clBlack
+      Font.Color = clLime
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      ParentFont = False
+      ReadOnly = True
+      ScrollBars = ssAutoVertical
+      TabOrder = 0
+    end
+    object btnClose: TButton
+      Left = 150
+      Height = 30
+      Top = 362
+      Width = 200
+      Align = alBottom
+      BorderSpacing.Left = 148
+      BorderSpacing.Right = 148
+      BorderSpacing.Bottom = 8
+      Caption = '[ CLOSE CONNECTION ]'
+      Font.Color = clBlack
+      Font.Height = -13
+      Font.Name = 'Courier New'
+      Font.Style = [fsBold]
+      OnClick = btnCloseClick
+      ParentFont = False
+      TabOrder = 1
+    end
+  end
+end
+

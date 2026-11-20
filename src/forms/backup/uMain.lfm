@@ -1,0 +1,361 @@
+object MainForm: TMainForm
+  Left = 250
+  Height = 720
+  Top = 150
+  Width = 1280
+  Caption = 'ECHO_BREACH: The Signal Cartel'
+  ClientHeight = 720
+  ClientWidth = 1280
+  Color = clBlack
+  Font.Color = clLime
+  Font.Name = 'Courier New'
+  Menu = MainMenu1
+  Position = poScreenCenter
+  LCLVersion = '4.8.0.0'
+  WindowState = wsMaximized
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  OnShow = FormShow
+  object pnlHeader: TPanel
+    Left = 0
+    Height = 103
+    Top = 0
+    Width = 1280
+    Align = alTop
+    BevelOuter = bvNone
+    BorderWidth = 10
+    ClientHeight = 103
+    ClientWidth = 1280
+    Color = 4600614
+    Font.Color = clLime
+    Font.Name = 'Comsolas'
+    ParentBackground = False
+    ParentColor = False
+    ParentFont = False
+    TabOrder = 0
+    object lblHeaderStats: TLabel
+      Left = 10
+      Height = 19
+      Top = 10
+      Width = 1260
+      Align = alTop
+      Caption = '[::] ECHO-OS v1.99 | CPU: [||||||....] 62% | RAM: [||||||||..] 81% | PROXY: 14.1.2.9 [ACTIVE] [::]'
+      Font.Color = clLime
+      Font.Height = -16
+      Font.Name = 'Consolas'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object lblHeaderStealth: TLabel
+      Left = 10
+      Height = 19
+      Top = 32
+      Width = 1260
+      Align = alTop
+      BorderSpacing.Top = 3
+      Caption = '[::] STEALTH METER: [|||||||||!] WARNING: TRACE DETECTED | NET LOAD: [|||.......] 320 Kbps    [::]'
+      Font.Color = clRed
+      Font.Height = -16
+      Font.Name = 'Consolas'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object lblHeaderCrypto: TLabel
+      Left = 10
+      Height = 19
+      Top = 54
+      Width = 1260
+      Align = alTop
+      BorderSpacing.Top = 3
+      Caption = '[::] WALLET: 0 DATA FRAGMENTS | MODULES: [ ] Q-CPU  [ ] S-VPN  [ ] A-ANALYZER             [::]'
+      Font.Color = clAqua
+      Font.Height = -16
+      Font.Name = 'Consolas'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object lblHeaderObjective: TLabel
+      Left = 10
+      Height = 19
+      Top = 74
+      Width = 1260
+      Align = alBottom
+      Caption = '[::] CURRENT OBJECTIVE: [STAGE 1] Check operator messages via "inbox" command               [::]'
+      Font.Color = clYellow
+      Font.Height = -16
+      Font.Name = 'Consolas'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+  end
+  object pnlTerminal: TPanel
+    Left = 880
+    Height = 617
+    Top = 103
+    Width = 400
+    Align = alRight
+    BevelColor = clLime
+    BevelOuter = bvNone
+    ClientHeight = 617
+    ClientWidth = 400
+    Color = clBlack
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 1
+    object memTerminal: TMemo
+      Left = 0
+      Height = 577
+      Top = 0
+      Width = 400
+      Align = alClient
+      BorderStyle = bsNone
+      Color = 3352606
+      Font.Color = clLime
+      Font.Height = -13
+      Font.Name = 'Consolas'
+      ParentFont = False
+      ReadOnly = True
+      TabOrder = 0
+      WordWrap = False
+    end
+    object pnlTerminalInput: TPanel
+      Left = 0
+      Height = 40
+      Top = 577
+      Width = 400
+      Align = alBottom
+      BevelOuter = bvNone
+      ClientHeight = 40
+      ClientWidth = 400
+      Color = 3946018
+      Font.Color = clLime
+      Font.Name = 'Consolas'
+      ParentBackground = False
+      ParentColor = False
+      ParentFont = False
+      TabOrder = 1
+      object edtCommand: TEdit
+        Left = 8
+        Height = 24
+        Top = 8
+        Width = 384
+        Align = alClient
+        BorderSpacing.Around = 8
+        BorderStyle = bsNone
+        Color = 3946018
+        Font.Color = clLime
+        Font.Height = -16
+        Font.Name = 'Courier New'
+        ParentFont = False
+        TabOrder = 0
+        OnKeyPress = edtCommandKeyPress
+      end
+    end
+  end
+  object pnlCRT: TPanel
+    Left = 0
+    Height = 617
+    Top = 103
+    Width = 880
+    Align = alClient
+    BevelColor = clLime
+    BevelOuter = bvNone
+    ClientHeight = 617
+    ClientWidth = 880
+    Color = clBlack
+    ParentBackground = False
+    ParentColor = False
+    TabOrder = 2
+    object lblICEWarning: TLabel
+      Left = 0
+      Height = 22
+      Top = 5
+      Width = 880
+      Align = alTop
+      Alignment = taCenter
+      BorderSpacing.Top = 5
+      BorderSpacing.Bottom = 5
+      Caption = '[!] INCOMING ATTACK DETECTED! TIME REMAINING: 10.0s [!]'
+      Color = clMaroon
+      Font.Color = clWhite
+      Font.Height = -19
+      Font.Name = 'Courier New'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      Transparent = False
+      Visible = False
+    end
+    object pbCRT: TPaintBox
+      Left = 0
+      Height = 385
+      Top = 32
+      Width = 880
+      Align = alClient
+      OnPaint = pbCRTPaint
+      OnResize = pbCRTResize
+    end
+    object pnlBottomBar: TPanel
+      Left = 0
+      Height = 200
+      Top = 417
+      Width = 880
+      Align = alBottom
+      BevelOuter = bvNone
+      ClientHeight = 200
+      ClientWidth = 880
+      Color = clBlack
+      ParentBackground = False
+      ParentColor = False
+      TabOrder = 0
+      object ChartOscilloscope: TChart
+        Left = 0
+        Height = 200
+        Top = 0
+        Width = 480
+        AxisList = <        
+          item
+            Grid.Color = clOlive
+            Marks.LabelFont.Color = clLime
+            Marks.LabelFont.Name = 'Courier New'
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.LabelFont.Orientation = 900
+            Title.Visible = True
+            Title.Caption = 'Amp'
+            Title.LabelBrush.Style = bsClear
+          end        
+          item
+            Grid.Color = clOlive
+            Alignment = calBottom
+            Marks.LabelFont.Color = clLime
+            Marks.LabelFont.Name = 'Courier New'
+            Marks.LabelBrush.Style = bsClear
+            Minors = <>
+            Title.Visible = True
+            Title.Caption = 'Time'
+            Title.LabelBrush.Style = bsClear
+          end>
+        BackColor = clBlack
+        Title.Brush.Color = clBlack
+        Title.Font.Color = clLime
+        Title.Font.Name = 'Courier New'
+        Title.Text.Strings = (
+          'Audio Spectrum Analysis'
+        )
+        Title.Visible = True
+        Align = alClient
+        Color = clBlack
+        object LineSeries1: TLineSeries
+          LinePen.Color = clLime
+          LinePen.Width = 2
+        end
+        object LineSeries2: TLineSeries
+          LinePen.Color = 33023
+          LinePen.Width = 2
+        end
+      end
+      object pbInfoBox: TPaintBox
+        Left = 480
+        Height = 200
+        Top = 0
+        Width = 400
+        Align = alRight
+        OnPaint = pbInfoBoxPaint
+        OnResize = pbInfoBoxResize
+      end
+    end
+  end
+  object pnlOverlay: TPanel
+    Left = 0
+    Height = 617
+    Top = 103
+    Width = 880
+    Align = alClient
+    BevelOuter = bvNone
+    ClientHeight = 617
+    ClientWidth = 880
+    Color = clBlack
+    Font.Color = clLime
+    Font.Name = 'Consolas'
+    ParentBackground = False
+    ParentColor = False
+    ParentFont = False
+    TabOrder = 3
+    Visible = False
+    object lblOverlayTitle: TLabel
+      Left = 0
+      Height = 47
+      Top = 280
+      Width = 880
+      Align = alTop
+      Alignment = taCenter
+      BorderSpacing.Top = 280
+      Caption = 'CRITICAL FAILURE'
+      Font.Color = clRed
+      Font.Height = -40
+      Font.Name = 'Consolas'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+    end
+    object lblOverlayDesc: TLabel
+      Left = 0
+      Height = 22
+      Top = 357
+      Width = 880
+      Align = alTop
+      Alignment = taCenter
+      BorderSpacing.Top = 30
+      Caption = 'PHYSICAL LOCATION TRACED. SYSTEM PURGED.'
+      Font.Color = clRed
+      Font.Height = -20
+      Font.Name = 'Courier New'
+      ParentColor = False
+      ParentFont = False
+    end
+  end
+  object tmrUIUpdate: TTimer
+    Enabled = False
+    Interval = 16
+    OnTimer = tmrUIUpdateTimer
+    Left = 40
+    Top = 100
+  end
+  object MainMenu1: TMainMenu
+    Left = 765
+    Top = 401
+    object MenuItem1: TMenuItem
+      Caption = 'System'
+      object MenuItem4: TMenuItem
+        Caption = 'Cek Update'
+      end
+      object Separator2: TMenuItem
+        Caption = '-'
+      end
+      object mnTerminate: TMenuItem
+        Caption = 'Exit'
+      end
+    end
+    object MenuItem2: TMenuItem
+      Caption = 'Help'
+      object mnTutorial: TMenuItem
+        Caption = 'Tutorial In Bahasa'
+      end
+      object MenuItem3: TMenuItem
+        Caption = 'Tutorial In English'
+      end
+      object Separator1: TMenuItem
+        Caption = '-'
+      end
+      object mnAbout: TMenuItem
+        Caption = 'About Me'
+        OnClick = mnAboutClick
+      end
+    end
+  end
+end
