@@ -1,0 +1,46 @@
+{
+  "meta": {
+    "profile": "ECHO-OS Default Operator",
+    "version": "1.99"
+  },
+  "terminal": {
+    "execute_command": "Return",
+    "history_prev": "Up",
+    "history_next": "Down",
+    "autocomplete": "Tab",
+    "clear_buffer": "Ctrl+L",
+    "abort_task": "Ctrl+C"
+  },
+  "dsp_controls": {
+    "toggle_bandpass": "F1",
+    "invert_phase": "F2",
+    "freq_step_up": "PageUp",
+    "freq_step_down": "PageDown",
+    "mute_audio": "Ctrl+M"
+  },
+  "network_ops": {
+    "quick_scan": "F5",
+    "emergency_proxy_bounce": "F9",
+    "toggle_glass_popup": "F10",
+    "panic_disconnect": "Escape"
+  },
+  "macros": [
+    {
+      "hotkey": "Ctrl+1",
+      "command": "scan_freq -r 20-50"
+    },
+    {
+      "hotkey": "Ctrl+2",
+      "command": "apply_filter -bp"
+    },
+    {
+      "hotkey": "Ctrl+3",
+      "command": "modulate_phase -invert"
+    },
+    {
+      "hotkey": "Ctrl+4",
+      "command": "deploy_bot -tgt 192.168.0.4 -stealth"
+    }
+  ]
+}
+
