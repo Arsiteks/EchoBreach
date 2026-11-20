@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, LCLIntf, Graphics, Dialogs, ExtCtrls, StdCtrls,
-  Buttons;
+  Buttons, ComCtrls;
 
 type
 
@@ -16,13 +16,17 @@ type
     BtnClose: TButton;
     Image1: TImage;
     Image2: TImage;
+    Label1: TLabel;
+    Label2: TLabel;
     lbLink: TLabel;
     LblTech: TLabel;
     LblTitle: TLabel;
     LblVersion: TLabel;
     LblCopyright: TLabel;
-    MemoDesc: TMemo;
+    PageControl1: TPageControl;
     PanelHeader: TPanel;
+    TabSheet1: TTabSheet;
+    TabSheet2: TTabSheet;
     procedure BtnCloseClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure lbLinkClick(Sender: TObject);

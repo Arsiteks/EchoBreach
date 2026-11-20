@@ -5,15 +5,13 @@ unit uBGRAEffects;
 interface
 
 uses
-  Classes, SysUtils, Graphics, BGRABitmap, BGRABitmapTypes, uNodeTopology,Math;
+  Classes, SysUtils, Graphics, BGRABitmap, BGRABitmapTypes, uNodeTopology, Math;
 
 type
   { TBGRAEffects - Engine visual berbasis BGRABitmap untuk merender topologi jaringan,
     jendela pop-up Glassmorphism (Pre-rendered blur), dan efek layar tabung (CRT Scanlines) }
   TBGRAEffects = class
   private
-    FBlurCache: TBGRABitmap;
-    FCacheValid: Boolean;
     FShowPopup: Boolean;
     FPopupTitle: string;
     FPopupPort: Word;
@@ -28,7 +26,8 @@ type
     constructor Create;
     destructor Destroy; override;
 
-    { Memaksa pengambilan ulang snapshot blur saat topologi berubah }
+    { [STUB] Dibiarkan untuk kompatibilitas karena sebelumnya dipanggil di uGameManager
+      namun kini operasi blur sudah tidak diperlukan }
     procedure InvalidateBlurCache;
 
     { Mengatur visibilitas dan data pada pop-up Glassmorphism }
@@ -41,7 +40,7 @@ type
     { 1. Render graf node jaringan (Anti-aliased vector & Phosphor Glow) }
     procedure RenderTopology(ACanvas: TBGRABitmap; ATopology: TTopologyManager);
 
-    { 2. Render jendela pop-up dengan efek Fake Glassmorphism (hemat CPU) }
+    { 2. Render jendela pop-up dengan efek Fake Glassmorphism (Tanpa Blur Latar) }
     procedure RenderGlassPopup(ACanvas: TBGRABitmap; ARect: TRect);
 
     { 3. Post-processing: Scanlines & Vignette langsung via pointer memori }
@@ -57,8 +56,6 @@ implementation
 constructor TBGRAEffects.Create;
 begin
   inherited Create;
-  FBlurCache := nil;
-  FCacheValid := False;
   FShowPopup := False;
   FPopupTitle := ':::: INTERCEPTED DATA (GLASSMORPH) ::::';
   FPopupPort := 8080;
@@ -72,22 +69,18 @@ end;
 
 destructor TBGRAEffects.Destroy;
 begin
-  if Assigned(FBlurCache) then
-    FreeAndNil(FBlurCache);
   inherited Destroy;
 end;
 
 procedure TBGRAEffects.InvalidateBlurCache;
 begin
-  FCacheValid := False;
+  { Fungsi ini sekarang kosong karena efek Blur telah dicabut untuk menghemat CPU.
+    Dibiarkan untuk mencegah error referensi pada uMain atau uGameManager lama. }
 end;
 
 procedure TBGRAEffects.SetInterceptPopup(AShow: Boolean; const ATitle: string;
   APort: Word; const APayload: string; const AStatus: string);
 begin
-  if FShowPopup <> AShow then
-    InvalidateBlurCache;
-
   FShowPopup := AShow;
   if ATitle <> '' then FPopupTitle := ATitle;
   if APort <> 0 then FPopupPort := APort;
@@ -205,7 +198,6 @@ end;
 
 procedure TBGRAEffects.RenderGlassPopup(ACanvas: TBGRABitmap; ARect: TRect);
 var
-  SubBmp: TBGRABitmap;
   BorderColor, TextColor: TBGRAPixel;
   PadX, PadY, LineH: Integer;
 begin
@@ -219,34 +211,16 @@ begin
   if ARect.Bottom > ACanvas.Height then ARect.Bottom := ACanvas.Height;
   if (ARect.Width <= 10) or (ARect.Height <= 10) then Exit;
 
-  { Optimasi Fake Glassmorphism: Lakukan FastBlur sekali saja dan simpan di FBlurCache }
-  if (not FCacheValid) or (not Assigned(FBlurCache)) or
-     (FBlurCache.Width <> ARect.Width) or (FBlurCache.Height <> ARect.Height) then
-  begin
-    if Assigned(FBlurCache) then
-      FreeAndNil(FBlurCache);
-
-    SubBmp := ACanvas.GetPart(ARect) as TBGRABitmap;
-    try
-      FBlurCache := SubBmp.FilterBlurRadial(6, rbBox) as TBGRABitmap;
-      { Lapisi dengan warna kaca hijau gelap semi-transparan }
-      FBlurCache.FillRect(0, 0, FBlurCache.Width, FBlurCache.Height,
-        BGRA(10, 35, 18, 190), dmDrawWithTransparency);
-      FCacheValid := True;
-    finally
-      SubBmp.Free;
-    end;
-  end;
-
-  { Tempelkan cache kaca buram ke kanvas utama }
-  ACanvas.PutImage(ARect.Left, ARect.Top, FBlurCache, dmSet);
+  { Gambar latar panel padat (tanpa blur) karena dirender di panel bawah terpisah }
+  ACanvas.FillRect(ARect.Left, ARect.Top, ARect.Right, ARect.Bottom,
+                   BGRA(10, 35, 18, 190), dmDrawWithTransparency);
 
   { Bingkai neon Glassmorphism }
   BorderColor := BGRA(80, 255, 120, 220);
   ACanvas.RectangleAntialias(ARect.Left, ARect.Top, ARect.Right - 1, ARect.Bottom - 1,
     BorderColor, 1.5);
 
-  { Render informasi dekripsi data di dalam kaca }
+  { Render informasi dekripsi data di dalam panel }
   TextColor := BGRA(180, 255, 190, 255);
   ACanvas.FontName := 'Consolas';
   ACanvas.FontStyle := [fsBold];
@@ -262,6 +236,9 @@ begin
   ACanvas.TextOut(PadX, PadY + (LineH * 1) + 6, Format('> PORT    : %d (OPEN)', [FPopupPort]), TextColor);
   ACanvas.TextOut(PadX, PadY + (LineH * 2) + 6, Format('> PAYLOAD : %s', [FPopupPayload]), TextColor);
   ACanvas.TextOut(PadX, PadY + (LineH * 3) + 6, Format('> STATUS  : %s', [FPopupStatus]), BGRA(100, 255, 100, 255));
+
+  { Post-Processing: Terapkan scanlines khusus pada panel informasi ini agar senada dengan CRT Map }
+  ApplyCRTEffect(ACanvas);
 end;
 
 procedure TBGRAEffects.ApplyCRTEffect(ACanvas: TBGRABitmap);

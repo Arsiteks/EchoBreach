@@ -68,7 +68,6 @@ type
     procedure AdvanceCampaign(ANewStage: Integer);
 
     procedure ResolveICEAttack(AIsDefended: Boolean);
-    function MakeBarMeter(APercent, ATotalBars: Integer; AAlert: Boolean = False): string;
   public
     constructor Create(AChart: TChart; APrimarySeries, ASecondarySeries: TLineSeries;
       AOnLog: TCommandLogEvent; AOnClear: TCommandActionEvent; AOnAbout: TCommandActionEvent);
@@ -80,8 +79,14 @@ type
     { Dipanggil oleh Timer UI utama untuk memproses siklus frame (Audio -> FFT -> Chart) }
     procedure UpdateTick;
 
-    { Merender visualisasi topologi, pop-up glassmorphism, dan efek CRT ke kanvas }
+    { Merender Cyber-HUD Header grafis ke kanvas atas }
+    procedure RenderHeader(ACanvas: TBGRABitmap);
+
+    { Merender visualisasi topologi dan efek CRT ke kanvas utama }
     procedure RenderCRT(ACanvas: TBGRABitmap);
+
+    { Merender pop-up glassmorphism ke kanvas terpisah (InfoBox) di sebelah chart }
+    procedure RenderAuxiliaryUI(ACanvas: TBGRABitmap);
 
     { Meneruskan string input dari TEdit ke Lexer & Command Executor }
     procedure ProcessCommand(const ACmdText: string);
@@ -89,12 +94,6 @@ type
     { Memicu kondisi akhir permainan secara manual (dipanggil oleh Command Exec) }
     procedure TriggerGameWon;
     procedure TriggerGameOver;
-
-    { Menghasilkan string status berformat ASCII untuk Panel Header }
-    function GetHeaderStatsText: string;
-    function GetHeaderStealthText: string;
-    function GetHeaderCryptoText: string;
-    function GetHeaderObjectiveText: string;
 
     property TraceLevel: Integer read FTraceLevel;
     property CampaignCompleted: Boolean read FCampaignCompleted;
@@ -251,7 +250,7 @@ begin
   end
   else
   begin
-    { [QA FIX] Pastikan pemain minimal berada di Stage 2 (tahu cara main)
+    { Pastikan pemain minimal berada di Stage 2 (tahu cara main)
       dan kurangi probabilitas (dari Random(200) menjadi Random(1500))
       agar serangan terasa adil dan dapat dikelola oleh manusia. }
     if (not FCampaignCompleted) and (FCampaignStage > 1) and (CurrentTime > FLastICETick + 20000) then
@@ -325,24 +324,59 @@ begin
   end;
 end;
 
-procedure TGameManager.RenderCRT(ACanvas: TBGRABitmap);
+procedure TGameManager.RenderHeader(ACanvas: TBGRABitmap);
 var
-  PopupRect: TRect;
-  W, H: Integer;
+  ProxyIP: string;
+begin
+  if not Assigned(ACanvas) or not Assigned(FBGRAEffects) then Exit;
+
+  if Assigned(FTopology) and Assigned(FTopology.ActiveNode) then
+    ProxyIP := FTopology.ActiveNode.IPAddress
+  else
+    ProxyIP := '14.1.2.9';
+
+  FBGRAEffects.RenderModernHeader(
+    ACanvas,
+    ProxyIP,
+    FCpuLoad,
+    FRamLoad,
+    FNetLoad,
+    FTraceLevel,
+    FDataFragments,
+    FIsCpuSpiking,
+    FHasQuantumCPU,
+    FHasStealthVPN,
+    FHasAutoAnalyzer,
+    FCampaignCompleted,
+    FCurrentObjective
+  );
+end;
+
+procedure TGameManager.RenderCRT(ACanvas: TBGRABitmap);
 begin
   if not Assigned(ACanvas) then Exit;
 
-  { 1. Gambar peta topologi jaringan }
+  { 1. Gambar peta topologi jaringan di kanvas utama }
   FBGRAEffects.RenderTopology(ACanvas, FTopology);
 
-  { 2. Hitung posisi proporsional dan gambar pop-up Glassmorphism }
-  W := ACanvas.Width;
-  H := ACanvas.Height;
-  PopupRect := Rect((W div 2) - 190, H - 150, (W div 2) + 190, H - 25);
-  FBGRAEffects.RenderGlassPopup(ACanvas, PopupRect);
-
-  { 3. Terapkan post-processing CRT scanlines }
+  { 2. Terapkan post-processing CRT scanlines ke seluruh kanvas utama }
   FBGRAEffects.ApplyCRTEffect(ACanvas);
+
+  { Catatan: RenderGlassPopup dipindahkan ke RenderAuxiliaryUI }
+end;
+
+procedure TGameManager.RenderAuxiliaryUI(ACanvas: TBGRABitmap);
+var
+  PopupRect: TRect;
+begin
+  if not Assigned(ACanvas) then Exit;
+
+  { Menyesuaikan kotak popup agar memenuhi area PaintBox yang baru (pbInfoBox) }
+  { Menyisakan sedikit margin (10 pixel) di sekelilingnya }
+  PopupRect := Rect(10, 10, ACanvas.Width - 10, ACanvas.Height - 10);
+
+  { Gambar pop-up Glassmorphism ke kanvas terpisah }
+  FBGRAEffects.RenderGlassPopup(ACanvas, PopupRect);
 end;
 
 procedure TGameManager.ProcessCommand(const ACmdText: string);
@@ -562,75 +596,6 @@ begin
     Result := 0
   else
     Result := EnsureRange(Integer(FICETimer - GetTickCount64), 0, 10000);
-end;
-
-function TGameManager.MakeBarMeter(APercent, ATotalBars: Integer; AAlert: Boolean): string;
-var
-  Filled, i: Integer;
-begin
-  Filled := Round((EnsureRange(APercent, 0, 100) / 100) * ATotalBars);
-  Result := '[';
-  for i := 1 to ATotalBars do
-  begin
-    if i <= Filled then
-    begin
-      if AAlert and (i = ATotalBars) then
-        Result := Result + '!'
-      else
-        Result := Result + '|';
-    end
-    else
-      Result := Result + '.';
-  end;
-  Result := Result + ']';
-end;
-
-function TGameManager.GetHeaderStatsText: string;
-var
-  ProxyIP: string;
-begin
-  if Assigned(FTopology.ActiveNode) then
-    ProxyIP := FTopology.ActiveNode.IPAddress
-  else
-    ProxyIP := '14.1.2.9';
-
-  Result := Format('[::] ECHO-OS v1.99 | CPU: %s %d%% | RAM: %s %d%% | PROXY: %s [ACTIVE] [::]',
-    [MakeBarMeter(FCpuLoad, 10, FIsCpuSpiking), FCpuLoad,
-     MakeBarMeter(FRamLoad, 10, FIsCpuSpiking), FRamLoad,
-     ProxyIP]);
-end;
-
-function TGameManager.GetHeaderStealthText: string;
-var
-  WarnStr: string;
-begin
-  if FTraceLevel >= 50 then
-    WarnStr := 'WARNING: TRACE DETECTED'
-  else
-    WarnStr := 'STATUS: STEALTH NOMINAL';
-
-  Result := Format('[::] STEALTH METER: %s %s | NET LOAD: %s %d Kbps    [::]',
-    [MakeBarMeter(FTraceLevel, 10, FTraceLevel >= 50),
-     WarnStr,
-     MakeBarMeter(FNetLoad div 10, 10),
-     FNetLoad]);
-end;
-
-function TGameManager.GetHeaderCryptoText: string;
-var
-  M1, M2, M3: string;
-begin
-  if FHasQuantumCPU then M1 := 'X' else M1 := ' ';
-  if FHasStealthVPN then M2 := 'X' else M2 := ' ';
-  if FHasAutoAnalyzer then M3 := 'X' else M3 := ' ';
-
-  Result := Format('[::] WALLET: %-3d DATA FRAGMENTS | MODULES: [%s] Q-CPU  [%s] S-VPN  [%s] A-ANALYZER             [::]',
-    [FDataFragments, M1, M2, M3]);
-end;
-
-function TGameManager.GetHeaderObjectiveText: string;
-begin
-  Result := Format('[::] CURRENT OBJECTIVE: %-72s [::]', [FCurrentObjective]);
 end;
 
 end.

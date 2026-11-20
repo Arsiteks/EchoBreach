@@ -31,6 +31,10 @@ type
     FNetLoad: Integer;
     FBasePath: string;
 
+    { Variabel untuk mengelola status jeda permainan (Pause) }
+    FIsPaused: Boolean;
+    FPausedAtTick: QWord;
+
     { Variabel untuk mengelola event CPU Spike saat proses dekripsi }
     FIsCpuSpiking: Boolean;
     FCpuSpikeTarget: Integer;
@@ -68,7 +72,6 @@ type
     procedure AdvanceCampaign(ANewStage: Integer);
 
     procedure ResolveICEAttack(AIsDefended: Boolean);
-    function MakeBarMeter(APercent, ATotalBars: Integer; AAlert: Boolean = False): string;
   public
     constructor Create(AChart: TChart; APrimarySeries, ASecondarySeries: TLineSeries;
       AOnLog: TCommandLogEvent; AOnClear: TCommandActionEvent; AOnAbout: TCommandActionEvent);
@@ -77,8 +80,14 @@ type
     { Menginisialisasi seluruh engine, database, dan aset eksternal }
     procedure InitializeGame(AWindowHandle: THandle);
 
+    { Menjeda atau melanjutkan permainan dengan kompensasi timer internal }
+    procedure SetPaused(APaused: Boolean);
+
     { Dipanggil oleh Timer UI utama untuk memproses siklus frame (Audio -> FFT -> Chart) }
     procedure UpdateTick;
+
+    { Merender Cyber-HUD Header grafis ke kanvas atas }
+    procedure RenderHeader(ACanvas: TBGRABitmap);
 
     { Merender visualisasi topologi dan efek CRT ke kanvas utama }
     procedure RenderCRT(ACanvas: TBGRABitmap);
@@ -93,12 +102,7 @@ type
     procedure TriggerGameWon;
     procedure TriggerGameOver;
 
-    { Menghasilkan string status berformat ASCII untuk Panel Header }
-    function GetHeaderStatsText: string;
-    function GetHeaderStealthText: string;
-    function GetHeaderCryptoText: string;
-    function GetHeaderObjectiveText: string;
-
+    property IsPaused: Boolean read FIsPaused;
     property TraceLevel: Integer read FTraceLevel;
     property CampaignCompleted: Boolean read FCampaignCompleted;
     property IsGameOver: Boolean read FIsGameOver;
@@ -129,6 +133,9 @@ begin
   FCpuLoad := 42;
   FRamLoad := 78;
   FNetLoad := 320;
+
+  FIsPaused := False;
+  FPausedAtTick := 0;
 
   FIsCpuSpiking := False;
   FCpuSpikeTarget := 99;
@@ -236,12 +243,39 @@ begin
   HandleServiceLog('[!] INCOMING TRANSMISSION: 1 unread message from Handler [ZERO]. Type "inbox" to view.');
 end;
 
+procedure TGameManager.SetPaused(APaused: Boolean);
+var
+  PauseDuration: QWord;
+begin
+  if FIsPaused = APaused then Exit;
+
+  if APaused then
+  begin
+    FIsPaused := True;
+    FPausedAtTick := GetTickCount64;
+  end
+  else
+  begin
+    PauseDuration := GetTickCount64 - FPausedAtTick;
+
+    { Geser seluruh batas waktu aktif sesuai lama durasi pause }
+    if FIsCpuSpiking and (FCpuSpikeEndTime > 0) then
+      Inc(FCpuSpikeEndTime, PauseDuration);
+
+    if FICEAttackActive and (FICETimer > 0) then
+      Inc(FICETimer, PauseDuration);
+
+    Inc(FLastICETick, PauseDuration);
+    FIsPaused := False;
+  end;
+end;
+
 procedure TGameManager.UpdateTick;
 var
   CurrentTime: QWord;
 begin
-  { Jangan update logic jika game sudah selesai }
-  if FIsGameOver or FIsGameWon then Exit;
+  { Jangan update logic jika game sedang dijeda atau sudah selesai }
+  if FIsPaused or FIsGameOver or FIsGameWon then Exit;
 
   CurrentTime := GetTickCount64;
 
@@ -328,6 +362,34 @@ begin
   end;
 end;
 
+procedure TGameManager.RenderHeader(ACanvas: TBGRABitmap);
+var
+  ProxyIP: string;
+begin
+  if not Assigned(ACanvas) or not Assigned(FBGRAEffects) then Exit;
+
+  if Assigned(FTopology) and Assigned(FTopology.ActiveNode) then
+    ProxyIP := FTopology.ActiveNode.IPAddress
+  else
+    ProxyIP := '14.1.2.9';
+
+  FBGRAEffects.RenderModernHeader(
+    ACanvas,
+    ProxyIP,
+    FCpuLoad,
+    FRamLoad,
+    FNetLoad,
+    FTraceLevel,
+    FDataFragments,
+    FIsCpuSpiking,
+    FHasQuantumCPU,
+    FHasStealthVPN,
+    FHasAutoAnalyzer,
+    FCampaignCompleted,
+    FCurrentObjective
+  );
+end;
+
 procedure TGameManager.RenderCRT(ACanvas: TBGRABitmap);
 begin
   if not Assigned(ACanvas) then Exit;
@@ -357,7 +419,7 @@ end;
 
 procedure TGameManager.ProcessCommand(const ACmdText: string);
 begin
-  if FIsGameOver or FIsGameWon then Exit;
+  if FIsPaused or FIsGameOver or FIsGameWon then Exit;
 
   if Assigned(FCmdExecutor) then
     FCmdExecutor.ExecuteInput(ACmdText);
@@ -567,80 +629,19 @@ begin
 end;
 
 function TGameManager.ICEAttackTimeLeft: Integer;
+var
+  RefTick: QWord;
 begin
   if not FICEAttackActive then
     Result := 0
   else
-    Result := EnsureRange(Integer(FICETimer - GetTickCount64), 0, 10000);
-end;
-
-function TGameManager.MakeBarMeter(APercent, ATotalBars: Integer; AAlert: Boolean): string;
-var
-  Filled, i: Integer;
-begin
-  Filled := Round((EnsureRange(APercent, 0, 100) / 100) * ATotalBars);
-  Result := '[';
-  for i := 1 to ATotalBars do
   begin
-    if i <= Filled then
-    begin
-      if AAlert and (i = ATotalBars) then
-        Result := Result + '!'
-      else
-        Result := Result + '|';
-    end
+    if FIsPaused then
+      RefTick := FPausedAtTick
     else
-      Result := Result + '.';
+      RefTick := GetTickCount64;
+    Result := EnsureRange(Integer(FICETimer - RefTick), 0, 10000);
   end;
-  Result := Result + ']';
-end;
-
-function TGameManager.GetHeaderStatsText: string;
-var
-  ProxyIP: string;
-begin
-  if Assigned(FTopology.ActiveNode) then
-    ProxyIP := FTopology.ActiveNode.IPAddress
-  else
-    ProxyIP := '14.1.2.9';
-
-  Result := Format('[::] ECHO-OS v1.99 | CPU: %s %d%% | RAM: %s %d%% | PROXY: %s [ACTIVE] [::]',
-    [MakeBarMeter(FCpuLoad, 10, FIsCpuSpiking), FCpuLoad,
-     MakeBarMeter(FRamLoad, 10, FIsCpuSpiking), FRamLoad,
-     ProxyIP]);
-end;
-
-function TGameManager.GetHeaderStealthText: string;
-var
-  WarnStr: string;
-begin
-  if FTraceLevel >= 50 then
-    WarnStr := 'WARNING: TRACE DETECTED'
-  else
-    WarnStr := 'STATUS: STEALTH NOMINAL';
-
-  Result := Format('[::] STEALTH METER: %s %s | NET LOAD: %s %d Kbps    [::]',
-    [MakeBarMeter(FTraceLevel, 10, FTraceLevel >= 50),
-     WarnStr,
-     MakeBarMeter(FNetLoad div 10, 10),
-     FNetLoad]);
-end;
-
-function TGameManager.GetHeaderCryptoText: string;
-var
-  M1, M2, M3: string;
-begin
-  if FHasQuantumCPU then M1 := 'X' else M1 := ' ';
-  if FHasStealthVPN then M2 := 'X' else M2 := ' ';
-  if FHasAutoAnalyzer then M3 := 'X' else M3 := ' ';
-
-  Result := Format('[::] WALLET: %-3d DATA FRAGMENTS | MODULES: [%s] Q-CPU  [%s] S-VPN  [%s] A-ANALYZER             [::]',
-    [FDataFragments, M1, M2, M3]);
-end;
-
-function TGameManager.GetHeaderObjectiveText: string;
-begin
-  Result := Format('[::] CURRENT OBJECTIVE: %-72s [::]', [FCurrentObjective]);
 end;
 
 end.

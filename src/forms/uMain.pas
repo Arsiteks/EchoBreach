@@ -13,10 +13,6 @@ type
   TMainForm = class(TForm)
     ChartOscilloscope: TChart;
     edtCommand: TEdit;
-    lblHeaderCrypto: TLabel;
-    lblHeaderObjective: TLabel;
-    lblHeaderStats: TLabel;
-    lblHeaderStealth: TLabel;
     lblICEWarning: TLabel;
     lblOverlayTitle: TLabel;
     lblOverlayDesc: TLabel;
@@ -27,12 +23,12 @@ type
     MenuItem1: TMenuItem;
     MenuItem2: TMenuItem;
     MenuItem3: TMenuItem;
-    MenuItem4: TMenuItem;
     mnAbout: TMenuItem;
     mnTerminate: TMenuItem;
     mnTutorial: TMenuItem;
     pbCRT: TPaintBox;
-    pbInfoBox: TPaintBox; // <-- Tambahan PaintBox baru di sebelah Chart
+    pbHeader: TPaintBox;  // <-- Kanvas HUD Modern di bagian atas
+    pbInfoBox: TPaintBox; // <-- PaintBox di sebelah Chart
     pnlBottomBar: TPanel; // <-- Kontainer bawah yang menampung Chart dan InfoBox
     pnlCRT: TPanel;
     pnlHeader: TPanel;
@@ -40,7 +36,6 @@ type
     pnlTerminalInput: TPanel;
     pnlOverlay: TPanel;
     Separator1: TMenuItem;
-    Separator2: TMenuItem;
     tmrUIUpdate: TTimer;
 
     procedure edtCommandKeyPress(Sender: TObject; var Key: char);
@@ -50,12 +45,15 @@ type
     procedure mnAboutClick(Sender: TObject);
     procedure pbCRTPaint(Sender: TObject);
     procedure pbCRTResize(Sender: TObject);
-    procedure pbInfoBoxPaint(Sender: TObject); // <-- Handler untuk InfoBox
-    procedure pbInfoBoxResize(Sender: TObject); // <-- Handler untuk InfoBox
+    procedure pbHeaderPaint(Sender: TObject);  // <-- Handler render HUD Header
+    procedure pbHeaderResize(Sender: TObject); // <-- Handler resize HUD Header
+    procedure pbInfoBoxPaint(Sender: TObject);
+    procedure pbInfoBoxResize(Sender: TObject);
     procedure tmrUIUpdateTimer(Sender: TObject);
   private
     FMainCanvas: TBGRABitmap;
-    FInfoCanvas: TBGRABitmap; // <-- Kanvas terpisah untuk InfoBox
+    FHeaderCanvas: TBGRABitmap; // <-- Kanvas terpisah untuk Cyber-HUD Header
+    FInfoCanvas: TBGRABitmap;   // <-- Kanvas terpisah untuk InfoBox
     FGameManager: TGameManager;
     procedure ClearTerminalBuffer;
     procedure ShowAboutDialog;
@@ -75,8 +73,9 @@ implementation
 
 procedure TMainForm.FormCreate(Sender: TObject);
 begin
-  { Inisialisasi kanvas BGRABitmap sesuai ukuran awal PaintBox }
+  { Inisialisasi kanvas BGRABitmap sesuai ukuran awal masing-masing PaintBox }
   FMainCanvas := TBGRABitmap.Create(pbCRT.Width, pbCRT.Height, BGRAPixelTransparent);
+  FHeaderCanvas := TBGRABitmap.Create(pbHeader.Width, pbHeader.Height, BGRAPixelTransparent);
   FInfoCanvas := TBGRABitmap.Create(pbInfoBox.Width, pbInfoBox.Height, BGRAPixelTransparent);
 
   { Konfigurasi awal UI Terminal }
@@ -111,6 +110,8 @@ begin
     FreeAndNil(FGameManager);
   if Assigned(FMainCanvas) then
     FreeAndNil(FMainCanvas);
+  if Assigned(FHeaderCanvas) then
+    FreeAndNil(FHeaderCanvas);
   if Assigned(FInfoCanvas) then
     FreeAndNil(FInfoCanvas);
 end;
@@ -122,16 +123,22 @@ end;
 
 procedure TMainForm.mnAboutClick(Sender: TObject);
 var
-  FA : TFormAbout;
+  FA: TFormAbout;
 begin
+  if Assigned(FGameManager) then
+    FGameManager.SetPaused(True);
+  tmrUIUpdate.Enabled := False;
 
+  FA := nil;
   try
-    FA := TFormAbout.Create(self);
+    FA := TFormAbout.Create(Self);
     FA.ShowModal;
   finally
     FA.Free;
+    if Assigned(FGameManager) then
+      FGameManager.SetPaused(False);
+    tmrUIUpdate.Enabled := True;
   end;
-
 end;
 
 procedure TMainForm.edtCommandKeyPress(Sender: TObject; var Key: char);
@@ -155,11 +162,13 @@ end;
 procedure TMainForm.pbCRTResize(Sender: TObject);
 begin
   if Assigned(FMainCanvas) and (pbCRT.Width > 0) and (pbCRT.Height > 0) then
-  begin
     FMainCanvas.SetSize(pbCRT.Width, pbCRT.Height);
-    { Invalidate BlurCache sudah tidak diperlukan di MainCanvas karena dipindah ke InfoCanvas,
-      tapi dibiarkan aman jika GameManager masih butuh sinkronisasi internal }
-  end;
+end;
+
+procedure TMainForm.pbHeaderResize(Sender: TObject);
+begin
+  if Assigned(FHeaderCanvas) and (pbHeader.Width > 0) and (pbHeader.Height > 0) then
+    FHeaderCanvas.SetSize(pbHeader.Width, pbHeader.Height);
 end;
 
 procedure TMainForm.pbInfoBoxResize(Sender: TObject);
@@ -184,6 +193,18 @@ begin
   end;
 end;
 
+procedure TMainForm.pbHeaderPaint(Sender: TObject);
+begin
+  if Assigned(FHeaderCanvas) and Assigned(FGameManager) then
+  begin
+    if (FHeaderCanvas.Width <> pbHeader.Width) or (FHeaderCanvas.Height <> pbHeader.Height) then
+      FHeaderCanvas.SetSize(pbHeader.Width, pbHeader.Height);
+
+    FGameManager.RenderHeader(FHeaderCanvas);
+    FHeaderCanvas.Draw(pbHeader.Canvas, 0, 0, True);
+  end;
+end;
+
 procedure TMainForm.pbInfoBoxPaint(Sender: TObject);
 begin
   if Assigned(FInfoCanvas) and Assigned(FGameManager) then
@@ -203,23 +224,9 @@ end;
 
 procedure TMainForm.tmrUIUpdateTimer(Sender: TObject);
 begin
-  if Assigned(FGameManager) then
+  if Assigned(FGameManager) and (not FGameManager.IsPaused) then
   begin
     FGameManager.UpdateTick;
-    lblHeaderStats.Caption := FGameManager.GetHeaderStatsText;
-    lblHeaderStealth.Caption := FGameManager.GetHeaderStealthText;
-    lblHeaderCrypto.Caption := FGameManager.GetHeaderCryptoText;
-    lblHeaderObjective.Caption := FGameManager.GetHeaderObjectiveText;
-
-    if FGameManager.TraceLevel >= 50 then
-      lblHeaderStealth.Font.Color := clRed
-    else
-      lblHeaderStealth.Font.Color := clLime;
-
-    if FGameManager.CampaignCompleted then
-      lblHeaderObjective.Font.Color := clLime
-    else
-      lblHeaderObjective.Font.Color := clYellow;
 
     { UI Peringatan Serangan Balik (Active ICE) }
     if FGameManager.IsICEAttackActive then
@@ -246,8 +253,9 @@ begin
       ShowEndScreen(True);
   end;
 
+  pbHeader.Invalidate; // <-- Refresh Cyber-HUD Header setiap frame
   pbCRT.Invalidate;
-  pbInfoBox.Invalidate; // <-- Pastikan kanvas informasi juga di-refresh setiap frame
+  pbInfoBox.Invalidate;
 end;
 
 procedure TMainForm.ClearTerminalBuffer;
@@ -256,10 +264,23 @@ begin
 end;
 
 procedure TMainForm.ShowAboutDialog;
+var
+  FA: TFormAbout;
 begin
-  if not Assigned(AboutForm) then
-    Application.CreateForm(TAboutForm, AboutForm);
-  AboutForm.ShowModal;
+  if Assigned(FGameManager) then
+    FGameManager.SetPaused(True);
+  tmrUIUpdate.Enabled := False;
+
+  FA := nil;
+  try
+    FA := TFormAbout.Create(Self);
+    FA.ShowModal;
+  finally
+    FA.Free;
+    if Assigned(FGameManager) then
+      FGameManager.SetPaused(False);
+    tmrUIUpdate.Enabled := True;
+  end;
 end;
 
 procedure TMainForm.ShowEndScreen(AIsWin: Boolean);

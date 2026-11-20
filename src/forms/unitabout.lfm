@@ -1,11 +1,11 @@
 object FormAbout: TFormAbout
   Left = 400
-  Height = 305
+  Height = 364
   Top = 250
   Width = 514
   BorderStyle = bsDialog
   Caption = 'About Me'
-  ClientHeight = 305
+  ClientHeight = 364
   ClientWidth = 514
   Color = 16119285
   Position = poScreenCenter
@@ -222,42 +222,13 @@ object FormAbout: TFormAbout
       ParentFont = False
     end
   end
-  object MemoDesc: TMemo
-    AnchorSideLeft.Control = Owner
-    AnchorSideTop.Control = PanelHeader
-    AnchorSideTop.Side = asrBottom
-    AnchorSideRight.Control = Owner
-    AnchorSideRight.Side = asrBottom
-    Left = 11
-    Height = 162
-    Top = 90
-    Width = 490
-    Anchors = [akTop, akLeft, akRight]
-    BorderSpacing.Left = 7
-    BorderSpacing.Top = 14
-    BorderSpacing.Right = 9
-    BorderSpacing.Around = 4
-    BorderStyle = bsNone
-    Color = 16119285
-    Font.CharSet = ANSI_CHARSET
-    Font.Height = -13
-    Font.Name = 'Consolas'
-    Lines.Strings = (
-      'The Signal Cartel is an immersive, terminal-based acoustic hacking simulator. Intercept hidden audio frequencies, navigate procedurally generated networks, evade active counter-hacks, and dismantle a dangerous underground syndicate.'
-      ''
-      'The Signal Cartel is hiding their darkest secrets in plain sight—encrypted within acoustic carrier waves. As a freelance cyber-operator working alongside your handler [ZERO], you must utilize experimental audio-hacking tools to breach their network, steal their data, and expose their operations to the world.'
-    )
-    ParentFont = False
-    ReadOnly = True
-    TabOrder = 1
-  end
   object LblCopyright: TLabel
     AnchorSideLeft.Control = Owner
     AnchorSideBottom.Control = Owner
     AnchorSideBottom.Side = asrBottom
     Left = 8
     Height = 15
-    Top = 281
+    Top = 340
     Width = 214
     Anchors = [akLeft, akRight, akBottom]
     BorderSpacing.Left = 8
@@ -276,14 +247,14 @@ object FormAbout: TFormAbout
     AnchorSideBottom.Side = asrBottom
     Left = 434
     Height = 30
-    Top = 268
+    Top = 327
     Width = 76
     Anchors = [akRight, akBottom]
     BorderSpacing.Right = 4
     BorderSpacing.Bottom = 7
     Caption = 'Close'
     Default = True
-    TabOrder = 2
+    TabOrder = 1
     OnClick = BtnCloseClick
   end
   object lbLink: TLabel
@@ -292,7 +263,7 @@ object FormAbout: TFormAbout
     Cursor = crHandPoint
     Left = 8
     Height = 15
-    Top = 266
+    Top = 325
     Width = 148
     Anchors = [akLeft, akBottom]
     BorderSpacing.Left = 8
@@ -300,5 +271,46 @@ object FormAbout: TFormAbout
     Font.Color = clBlue
     ParentFont = False
     OnClick = lbLinkClick
+  end
+  object PageControl1: TPageControl
+    Left = 0
+    Height = 232
+    Top = 78
+    Width = 514
+    ActivePage = TabSheet1
+    Align = alTop
+    BorderSpacing.Top = 6
+    TabIndex = 0
+    TabOrder = 2
+    object TabSheet1: TTabSheet
+      Caption = 'Application'
+      ClientHeight = 204
+      ClientWidth = 506
+      object Label1: TLabel
+        Left = 5
+        Height = 194
+        Top = 5
+        Width = 496
+        Align = alClient
+        BorderSpacing.Around = 5
+        Caption = 'The Signal Cartel is an immersive, terminal-based acoustic hacking simulator. Intercept hidden audio frequencies, navigate procedurally generated networks, evade active counter-hacks, and dismantle a dangerous underground syndicate.'#13#10#13#10'The Signal Cartel is hiding their darkest secrets in plain sight—encrypted within acoustic carrier waves. As a freelance cyber-operator working alongside your handler [ZERO], you must utilize experimental audio-hacking tools to breach their network, steal their data, and expose their operations to the world.'
+        WordWrap = True
+      end
+    end
+    object TabSheet2: TTabSheet
+      Caption = 'Project  Arsiteks '
+      ClientHeight = 204
+      ClientWidth = 506
+      object Label2: TLabel
+        Left = 5
+        Height = 194
+        Top = 5
+        Width = 496
+        Align = alClient
+        BorderSpacing.Around = 5
+        Caption = 'Arsiteks—a Company developer focused on designing and building 2D simulation games that explore various academic disciplines and aspects of life.'#13#10#13#10'In a landscape dominated by games designed purely for entertainment, my mission is to offer a meaningful alternative: making the learning process feel like play. Through interactive simulations, I transform complex concepts—ranging from science and engineering to the dynamics of everyday life—into visual experiences that are accessible, engaging, and relevant to today’s generation.'#13#10'All of my projects are developed using Lazarus IDE and Free Pascal (FPC). This choice of native technology is intentional: the resulting applications and simulation games offer high performance and a very small file size, and they run smoothly even on computers with limited hardware specifications—ensuring more equitable access to education, unhindered by hardware constraints.'
+        WordWrap = True
+      end
+    end
   end
 end

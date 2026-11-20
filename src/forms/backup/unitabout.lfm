@@ -4,7 +4,7 @@ object FormAbout: TFormAbout
   Top = 250
   Width = 514
   BorderStyle = bsDialog
-  Caption = 'Tentang Aplikasi'
+  Caption = 'About Me'
   ClientHeight = 305
   ClientWidth = 514
   Color = 16119285
@@ -212,8 +212,8 @@ object FormAbout: TFormAbout
       Left = 88
       Height = 15
       Top = 52
-      Width = 145
-      Caption = 'Built in Lazarus Freepascal '
+      Width = 120
+      Caption = 'Built With Lazarus FPC'
       Font.CharSet = ANSI_CHARSET
       Font.Height = -12
       Font.Name = 'Segoe UI'
@@ -281,7 +281,7 @@ object FormAbout: TFormAbout
     Anchors = [akRight, akBottom]
     BorderSpacing.Right = 4
     BorderSpacing.Bottom = 7
-    Caption = 'Tutup'
+    Caption = 'Close'
     Default = True
     TabOrder = 2
     OnClick = BtnCloseClick

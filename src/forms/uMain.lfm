@@ -200,73 +200,20 @@ object MainForm: TMainForm
       Width = 880
       Align = alTop
       BevelOuter = bvNone
-      BorderWidth = 10
       ClientHeight = 103
       ClientWidth = 880
       Color = 4600614
-      Font.Color = clLime
-      Font.Name = 'Comsolas'
       ParentBackground = False
       ParentColor = False
-      ParentFont = False
       TabOrder = 1
-      object lblHeaderStats: TLabel
-        Left = 10
-        Height = 19
-        Top = 10
-        Width = 860
-        Align = alTop
-        Caption = '[::] ECHO-OS v1.99 | CPU: [||||||....] 62% | RAM: [||||||||..] 81% | PROXY: 14.1.2.9 [ACTIVE] [::]'
-        Font.Color = clLime
-        Font.Height = -16
-        Font.Name = 'Consolas'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-      end
-      object lblHeaderStealth: TLabel
-        Left = 10
-        Height = 19
-        Top = 32
-        Width = 860
-        Align = alTop
-        BorderSpacing.Top = 3
-        Caption = '[::] STEALTH METER: [|||||||||!] WARNING: TRACE DETECTED | NET LOAD: [|||.......] 320 Kbps    [::]'
-        Font.Color = clRed
-        Font.Height = -16
-        Font.Name = 'Consolas'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-      end
-      object lblHeaderCrypto: TLabel
-        Left = 10
-        Height = 19
-        Top = 54
-        Width = 860
-        Align = alTop
-        BorderSpacing.Top = 3
-        Caption = '[::] WALLET: 0 DATA FRAGMENTS | MODULES: [ ] Q-CPU  [ ] S-VPN  [ ] A-ANALYZER             [::]'
-        Font.Color = clAqua
-        Font.Height = -16
-        Font.Name = 'Consolas'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-      end
-      object lblHeaderObjective: TLabel
-        Left = 10
-        Height = 19
-        Top = 74
-        Width = 860
-        Align = alBottom
-        Caption = '[::] CURRENT OBJECTIVE: [STAGE 1] Check operator messages via "inbox" command               [::]'
-        Font.Color = clYellow
-        Font.Height = -16
-        Font.Name = 'Consolas'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
+      object pbHeader: TPaintBox
+        Left = 0
+        Height = 103
+        Top = 0
+        Width = 880
+        Align = alClient
+        OnPaint = pbHeaderPaint
+        OnResize = pbHeaderResize
       end
     end
   end
@@ -331,12 +278,6 @@ object MainForm: TMainForm
     Top = 401
     object MenuItem1: TMenuItem
       Caption = 'System'
-      object MenuItem4: TMenuItem
-        Caption = 'Cek Update'
-      end
-      object Separator2: TMenuItem
-        Caption = '-'
-      end
       object mnTerminate: TMenuItem
         Caption = 'Exit'
       end
